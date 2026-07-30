@@ -670,12 +670,12 @@ function openReader(id){
   reader.classList.add("open");
   reader.scrollTop = 0;
   document.body.style.overflow = "hidden";
-  requestAnimationFrame(layoutPagination);
+  requestAnimationFrame(() => layoutPagination(true));
   // Mobile browsers (especially iOS Safari) can report a stale viewport size
   // on first paint while the address bar is still settling. Re-measure shortly
   // after to correct for that, rather than requiring the user to rotate the
   // device to trigger a resize event that happens to fix it.
-  setTimeout(() => { if(currentId) layoutPagination(); }, 400);
+  setTimeout(() => { if(currentId) layoutPagination(false); }, 400);
 }
 
 function closeReader(){
@@ -831,7 +831,7 @@ function buildPages(s, pageW, availH){
 
 let pageIndex = 0, totalTextPages = 1;
 
-function layoutPagination(){
+function layoutPagination(resetToStart){
   const pager = document.getElementById("pager");
   const track = document.getElementById("pagerTrack");
   const titlePage = document.getElementById("titlePage");
@@ -865,6 +865,7 @@ function layoutPagination(){
   titlePage.style.width = pageW + "px";
 
   const pages = buildPages(currentEntryRef, pageW, availH);
+  const previousIndex = pageIndex;
   totalTextPages = pages.length;
 
   pages.forEach(html => {
@@ -876,7 +877,10 @@ function layoutPagination(){
     track.appendChild(slide);
   });
 
-  pageIndex = 0;
+  // A fresh chapter open starts at the title card. Any other re-layout
+  // (the delayed correction, a resize, an orientation change) should keep
+  // you where you were reading, not silently snap you back to page 0.
+  pageIndex = resetToStart ? 0 : Math.min(previousIndex, totalTextPages);
   applyPageTransform();
   updateHint();
 }
