@@ -270,8 +270,8 @@
     padding:10vh 6vw 18vh;
   }
   @media (min-width:1025px){
-    .reader-inner{ max-width:920px; }
-    .reader-text p{ font-size:1.2rem; line-height:1.9; }
+    .reader-inner{ max-width:1180px; }
+    .reader-text p{ font-size:1.24rem; line-height:1.95; }
     .hero-paper{ max-width:none; padding:5.5rem 6rem; }
   }
   .reader-top{ display:flex; justify-content:space-between; align-items:center; }
@@ -381,6 +381,7 @@
     .reader-inner{ padding-top:max(7vh, 4.75rem); padding-bottom:14vh; }
     .reader-top{ margin-bottom:2.8rem; }
     .reader-text p{ font-size:1.08rem; line-height:1.7; margin-bottom:1.3rem; }
+    .reader-nav{ display:none; }
   }
 
   @media (max-width:640px){
@@ -450,7 +451,7 @@
     display:inline-block;
   }
   .pager.paginated .title-sub{ color:var(--paper-accent); border-top:1px solid rgba(43,32,24,0.25); }
-  .reader-text.paginated{ flex:0 0 auto; box-sizing:border-box; overflow:hidden; background-image:var(--paper-photo); background-size:100% 100%; background-repeat:no-repeat; padding:2.4rem 1.5rem; }
+  .reader-text.paginated{ flex:0 0 auto; box-sizing:border-box; overflow:hidden; background-image:var(--paper-photo); background-size:100% 100%; background-repeat:no-repeat; padding:3.3rem 1.5rem 2.2rem; }
   .pager-hint{
     display:none;
     position:absolute;
@@ -708,7 +709,28 @@ document.getElementById("gateForm").addEventListener("submit", function(ev){
 
 // ---------- PAGER (mobile swipe pagination) ----------
 function isMobilePaged(){
-  return window.matchMedia("(max-width:640px)").matches;
+  return window.matchMedia("(max-width:1024px)").matches;
+}
+
+function titleSlotHtml(story, idx){
+  return `<p class="title-num">${caseNum(idx)}</p>
+    <p class="eyebrow">Recovered</p>
+    <h3>${story.title}</h3>
+    <p class="title-sub">No. ${caseNum(idx)}</p>`;
+}
+
+// Builds one continuous, flat sequence of slots spanning the ENTIRE
+// collection — each story's title card, then its text pages, then straight
+// into the next story's title card — so swiping never has to "reset."
+function buildAllSlots(pageW, availH){
+  const slots = [];
+  stories.forEach((story, storyIdx) => {
+    slots.push({ type:"title", storyIdx, html: titleSlotHtml(story, storyIdx) });
+    buildPages(story, pageW, availH).forEach(html => {
+      slots.push({ type:"text", storyIdx, html });
+    });
+  });
+  return slots;
 }
 
 function buildPages(s, pageW, availH){
@@ -837,21 +859,31 @@ function buildPages(s, pageW, availH){
   return pages.length ? pages : [""];
 }
 
-let pageIndex = 0, totalTextPages = 1;
+let slotIndex = 0;
+let allSlots = [];
+
+function syncCurrentStoryFromSlot(){
+  const slot = allSlots[slotIndex];
+  if(!slot) return;
+  const story = stories[slot.storyIdx];
+  if(story && story.id !== currentId){
+    currentId = story.id;
+    currentEntryRef = story;
+  }
+}
 
 function layoutPagination(resetToStart){
   const pager = document.getElementById("pager");
   const track = document.getElementById("pagerTrack");
-  const titlePage = document.getElementById("titlePage");
+  const titlePage = document.getElementById("titlePage"); // legacy static template, unused on mobile now
   const textEl = document.getElementById("readerText");
 
-  track.querySelectorAll(".page-slide").forEach(el => el.remove());
+  track.querySelectorAll(".gen-slot").forEach(el => el.remove());
 
   if(!isMobilePaged()){
     pager.classList.remove("paginated");
     textEl.style.display = "";
-    titlePage.style.width = "";
-    titlePage.style.height = "";
+    titlePage.style.display = "none";
     track.style.transform = "";
     pager.style.height = "";
     return;
@@ -861,64 +893,73 @@ function layoutPagination(resetToStart){
 
   pager.classList.add("paginated");
   textEl.style.display = "none";
+  titlePage.style.display = "none";
 
+  // The "Next Fragment" button is hidden in paginated (mobile/tablet) mode now
+  // that swiping crosses story boundaries directly, so there's no button row
+  // to leave room for below the card anymore — just a small safety margin.
   const top = pager.offsetTop;
-  const footerAllowance = 120;
+  const footerAllowance = 24;
   const viewportH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
   const availH = Math.max(280, viewportH - top - footerAllowance);
   pager.style.height = availH + "px";
-  titlePage.style.height = availH + "px";
 
   const pageW = pager.clientWidth;
-  titlePage.style.width = pageW + "px";
 
-  const pages = buildPages(currentEntryRef, pageW, availH);
-  const previousIndex = pageIndex;
-  totalTextPages = pages.length;
+  allSlots = buildAllSlots(pageW, availH);
 
-  pages.forEach(html => {
-    const slide = document.createElement("div");
-    slide.className = "page-slide reader-text paginated";
-    slide.style.width = pageW + "px";
-    slide.style.height = availH + "px";
-    slide.innerHTML = html;
-    track.appendChild(slide);
+  allSlots.forEach(slot => {
+    const el = document.createElement("div");
+    el.className = "gen-slot " + (slot.type === "title" ? "title-page" : "reader-text paginated page-slide");
+    el.style.width = pageW + "px";
+    el.style.height = availH + "px";
+    el.innerHTML = slot.html;
+    track.appendChild(el);
   });
 
-  // A fresh chapter open starts at the title card. Any other re-layout
-  // (the delayed correction, a resize, an orientation change) should keep
-  // you where you were reading, not silently snap you back to page 0.
-  pageIndex = resetToStart ? 0 : Math.min(previousIndex, totalTextPages);
+  if(resetToStart){
+    const storyIdx = stories.findIndex(s => s.id === currentId);
+    const targetIdx = allSlots.findIndex(sl => sl.type === "title" && sl.storyIdx === storyIdx);
+    slotIndex = targetIdx >= 0 ? targetIdx : 0;
+  } else {
+    slotIndex = Math.min(slotIndex, allSlots.length - 1);
+  }
+
   applyPageTransform();
   updateHint();
+  syncCurrentStoryFromSlot();
 }
 
 function applyPageTransform(){
   const pager = document.getElementById("pager");
   const track = document.getElementById("pagerTrack");
   const pageW = pager.clientWidth;
-  track.style.transform = `translateX(${-pageIndex * pageW}px)`;
+  track.style.transform = `translateX(${-slotIndex * pageW}px)`;
 }
 
 function updateHint(){
   const hint = document.getElementById("pagerHint");
-  if(!isMobilePaged()) return;
-  hint.innerHTML = pageIndex === 0
-    ? '<span class="hint-arrow">&rsaquo;&rsaquo;</span> swipe or tap to begin'
-    : `page ${pageIndex} of ${totalTextPages}`;
+  if(!isMobilePaged() || !allSlots.length) return;
+  const slot = allSlots[slotIndex];
+  if(!slot) return;
+  if(slot.type === "title"){
+    hint.innerHTML = '<span class="hint-arrow">&rsaquo;&rsaquo;</span> swipe or tap to begin';
+  } else {
+    const textSlots = allSlots.filter(sl => sl.storyIdx === slot.storyIdx && sl.type === "text");
+    const pos = textSlots.indexOf(slot) + 1;
+    hint.textContent = `page ${pos} of ${textSlots.length}`;
+  }
 }
 
 function goToPage(delta){
-  const totalSlots = totalTextPages + 1;
-  const next = pageIndex + delta;
-  if(next < 0) return;
-  if(next >= totalSlots){
-    document.getElementById("anotherCase").click();
-    return;
-  }
-  pageIndex = next;
+  if(!allSlots.length) return;
+  // Wraps in both directions — swipe past the last page of the last story
+  // and you're back at the first story's title card; swipe backward from
+  // a title card and you land on the previous story's last page.
+  slotIndex = (slotIndex + delta + allSlots.length) % allSlots.length;
   applyPageTransform();
   updateHint();
+  syncCurrentStoryFromSlot();
 }
 
 (function setupSwipe(){
