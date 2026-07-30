@@ -453,14 +453,29 @@
   .reader-text.paginated{ flex:0 0 auto; box-sizing:border-box; overflow:hidden; background-image:var(--paper-photo); background-size:100% 100%; background-repeat:no-repeat; }
   .pager-hint{
     display:none;
+    position:absolute;
+    left:0; right:0; bottom:1.4rem;
     font-family:'JetBrains Mono', monospace;
-    font-size:0.68rem;
+    font-size:0.72rem;
     letter-spacing:0.08em;
     text-transform:uppercase;
-    color:var(--bone-dim);
+    color:var(--ink-dark);
     text-align:center;
-    margin:0.9rem 0 0;
-    opacity:0.75;
+    z-index:7;
+    text-shadow:0 1px 4px rgba(255,255,255,0.55);
+  }
+  .hint-arrow{
+    display:inline-block;
+    color:var(--paper-accent);
+    animation:hint-nudge 1.4s ease-in-out infinite;
+    margin-right:0.3em;
+  }
+  @keyframes hint-nudge{
+    0%, 100% { transform:translateX(0); opacity:0.6; }
+    50% { transform:translateX(6px); opacity:1; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .hint-arrow{ animation:none; }
   }
 </style>
 </head>
@@ -510,8 +525,8 @@
           <div class="reader-text" id="readerText"></div>
         </div>
       </div>
+      <p class="pager-hint" id="pagerHint"><span class="hint-arrow">&rsaquo;&rsaquo;</span> swipe or tap to begin</p>
     </div>
-    <p class="pager-hint" id="pagerHint">swipe or tap to begin</p>
     <div class="reader-nav">
       <button class="another-case" id="anotherCase">Next Fragment &rarr;</button>
     </div>
@@ -865,7 +880,9 @@ function applyPageTransform(){
 function updateHint(){
   const hint = document.getElementById("pagerHint");
   if(!isMobilePaged()) return;
-  hint.textContent = pageIndex === 0 ? "swipe or tap to begin" : `page ${pageIndex} of ${totalTextPages}`;
+  hint.innerHTML = pageIndex === 0
+    ? '<span class="hint-arrow">&rsaquo;&rsaquo;</span> swipe or tap to begin'
+    : `page ${pageIndex} of ${totalTextPages}`;
 }
 
 function goToPage(delta){
