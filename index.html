@@ -378,7 +378,7 @@
   .another-case:hover{ color:var(--bone); border-color:var(--accent-bright); }
 
   @media (max-width:1024px){
-    .reader-inner{ padding-top:7vh; padding-bottom:14vh; }
+    .reader-inner{ padding-top:max(7vh, 4.75rem); padding-bottom:14vh; }
     .reader-top{ margin-bottom:2.8rem; }
     .reader-text p{ font-size:1.08rem; line-height:1.7; margin-bottom:1.3rem; }
   }
@@ -392,7 +392,7 @@
     .reader-text p{ font-size:0.99rem; line-height:1.55; margin-bottom:1rem; }
     .epigraph{ font-size:1.2rem; margin-bottom:1.8rem; padding-bottom:1.2rem; }
     .reader-nav{ margin-top:2.4rem; padding-top:1.2rem; }
-    .pager-hint{ display:block; }
+    .pager-hint{ display:block !important; }
   }
 
   /* ---------- PAGER (mobile swipe pagination) ---------- */
@@ -671,6 +671,11 @@ function openReader(id){
   reader.scrollTop = 0;
   document.body.style.overflow = "hidden";
   requestAnimationFrame(layoutPagination);
+  // Mobile browsers (especially iOS Safari) can report a stale viewport size
+  // on first paint while the address bar is still settling. Re-measure shortly
+  // after to correct for that, rather than requiring the user to rotate the
+  // device to trigger a resize event that happens to fix it.
+  setTimeout(() => { if(currentId) layoutPagination(); }, 400);
 }
 
 function closeReader(){
@@ -851,7 +856,8 @@ function layoutPagination(){
 
   const top = pager.offsetTop;
   const footerAllowance = 120;
-  const availH = Math.max(280, window.innerHeight - top - footerAllowance);
+  const viewportH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  const availH = Math.max(280, viewportH - top - footerAllowance);
   pager.style.height = availH + "px";
   titlePage.style.height = availH + "px";
 
@@ -935,6 +941,12 @@ window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => { if(currentId) layoutPagination(); }, 150);
 });
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { if(currentId) layoutPagination(); }, 150);
+  });
+}
 window.addEventListener("load", () => { if(currentId) layoutPagination(); });
 </script>
 </body>
