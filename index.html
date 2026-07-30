@@ -450,7 +450,7 @@
     display:inline-block;
   }
   .pager.paginated .title-sub{ color:var(--paper-accent); border-top:1px solid rgba(43,32,24,0.25); }
-  .reader-text.paginated{ flex:0 0 auto; box-sizing:border-box; overflow:hidden; background-image:var(--paper-photo); background-size:100% 100%; background-repeat:no-repeat; }
+  .reader-text.paginated{ flex:0 0 auto; box-sizing:border-box; overflow:hidden; background-image:var(--paper-photo); background-size:100% 100%; background-repeat:no-repeat; padding:2.4rem 1.5rem; }
   .pager-hint{
     display:none;
     position:absolute;
@@ -737,6 +737,14 @@ function buildPages(s, pageW, availH){
   probe.className = "reader-text paginated";
   document.body.appendChild(probe);
 
+  // .reader-text.paginated now has real padding (so text doesn't sit flush
+  // against the torn/burnt edge of the paper). box-sizing:border-box means
+  // that padding eats into the box's own declared height, so the true usable
+  // budget for packing text is smaller than the box's full height.
+  const probeStyle = getComputedStyle(probe);
+  const vPad = parseFloat(probeStyle.paddingTop || "0") + parseFloat(probeStyle.paddingBottom || "0");
+  const budgetH = Math.max(80, availH - vPad);
+
   function nodeFor(block, text, lead){
     const wrapper = document.createElement("div");
     const applyAd = t => s.adStyle ? adCaps(emphasize(t)) : emphasize(t);
@@ -771,7 +779,7 @@ function buildPages(s, pageW, availH){
     if(block.type === "epigraph" || block.type === "intro"){
       const node = nodeFor(block, block.text, false);
       const h = measure(node);
-      if(currentHtml.length > 0 && currentHeight + h > availH) flushPage();
+      if(currentHtml.length > 0 && currentHeight + h > budgetH) flushPage();
       currentHtml.push(node.outerHTML);
       currentHeight += h;
       return;
@@ -785,7 +793,7 @@ function buildPages(s, pageW, availH){
       const fullNode = nodeFor(block, remaining, lead);
       const fullH = measure(fullNode);
 
-      if(currentHeight + fullH <= availH){
+      if(currentHeight + fullH <= budgetH){
         currentHtml.push(fullNode.outerHTML);
         currentHeight += fullH;
         remaining = "";
@@ -799,7 +807,7 @@ function buildPages(s, pageW, availH){
         const candText = words.slice(0, mid).join(" ");
         const candNode = nodeFor(block, candText, lead);
         const candH = measure(candNode);
-        if(currentHeight + candH <= availH){ best = mid; lo = mid + 1; }
+        if(currentHeight + candH <= budgetH){ best = mid; lo = mid + 1; }
         else { hi = mid - 1; }
       }
 
