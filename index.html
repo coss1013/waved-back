@@ -323,22 +323,16 @@
     padding:0 0 2rem;
     border-bottom:1px solid rgba(43,32,24,0.2);
   }
-  .intro-line{
-    font-family:'Source Serif 4', serif;
-    font-style:italic;
-    font-size:1.02rem;
-    line-height:1.6;
-    color:var(--ink-dim);
-    margin:0 0 1.6rem;
-  }
-  .intro-line.ad-byline{
+  .reader-text .intro-line{
     font-family:'JetBrains Mono', monospace;
     font-style:normal;
+    font-weight:700;
     text-transform:uppercase;
-    font-size:0.78rem;
+    font-size:0.9rem;
     letter-spacing:0.1em;
     color:var(--paper-accent);
     padding-bottom:0.9rem;
+    margin:0 0 1.6rem;
     border-bottom:1px solid rgba(43,32,24,0.2);
   }
   .ad-caps{
@@ -539,7 +533,7 @@
   </div>
 </div>
 
-<button class="back-link" onclick="closeReader()" aria-label="Back to homepage">&larr;</button>
+<button class="back-link" onclick="handleBackClick()" aria-label="Back to homepage">&larr;</button>
 
 <script>
 const stories = [
@@ -548,28 +542,28 @@ const stories = [
     text:`I don't understand why the struggle. I'm beyond this nonsense; I'm above the work involved to show my love. I'm a businessman, for fucksake. These boys are my proteges; I done everything for them. I chose 'em as my pupils, taught 'em the trade. I gave 'em a place to escape their lives and avoid those that did'n care. But I care; I love 'em. I seen 'em at their best and worst; happy and sad; strong and vulnerable; confident and weak. I was there through it all. I needed them more than I ever needed anyone else. I did'n jus' need them; they were mine.`
   },
   {
-    id:"kenneth-and-stevie", title:"Kenneth and Stevie",
-    text:`It was like an AA meeting. I remember saying, "I'm Kenneth. I'm here to receive your help." It was relaxing; the group supported me. But something shifted. They wanted me to be a part of a bigger conversation. I was no fool; it was a test, a testimonial, and a desire to cripple me. At one point, it crippled me. Why so much pressure when I'm trying to share my feelings? Stevie stepped in to protect me. He fucking hated those motherfuckers. He wanted answers and, in turn, wanted those persecutors dead. He unleashed a stream of profanities to protect me from the interrogation. I discovered his name in this time of trial, when he protected me. At one point, he leaned in close and said, "Angelo will keep us safe."`
+    id:"kenneth-and-stevie", title:"Kenneth and Stevie", intro:"Interview transcribed by A.N.G.",
+    text:`“It was like an AA meeting. I remember saying, ‘I'm Kenneth. I'm here to receive your help.’ It was relaxing; the group supported me. But something shifted. They wanted me to be a part of a bigger conversation. I was no fool; it was a test, a testimonial, and a desire to cripple me. At one point, it did. Why so much pressure when I'm trying to share my feelings? Stevie stepped in to protect me. He fucking hated those motherfuckers. He wanted answers and, in turn, wanted those persecutors dead. He unleashed a stream of profanities to protect me from the interrogation. I discovered his name in this time of trial, when he protected me. At one point, he leaned in close and said, ‘Angelo will keep us safe.’”`
   },
   {
     id:"on-the-road-again", title:"On the Road Again",
     text:`Switching radio stations as I cross state-line makes it worth the trip. When one station passes into static, there's another with a signal—the state border or a random tower whose lines struck over it. You find yourself driving under them as you progress across the western part of the country. From Washington to Utah, the Top 40s would vary ever so slightly. Maybe it was the teasing airwaves of Los Angeles; maybe it was conservative doctrines of Mormon country. Regardless, it was bliss; each trip to meet a new lover or a return trip to one most dear.`
   },
   {
-    id:"concierge", title:"Concierge", adStyle:true,
-    text:`[Review of the World's Fair Hotel by Allen N. Grier, Chicago Tribune] Come down to the neighborhood of ENGLEWOOD and enjoy the lavish accommodations of the WORLD'S FAIR HOTEL. NEWLY renovated and in HIGH demand, this three-story structure is close to the best sites in Chicago and is being fully renovated. COME now and save on your first visit. Recent reviews have stated, "I LOVED the location. I walked to the shops and AVOIDED the train across town." Another said, "The hotel was the PERFECT location to dress in my finest and explore the district of high-end shops before returning to incredible DRINKS that took hold." The World's Fair Hotel is the perfect trip for LOVING COUPLES, where they can explore in style; drinking, laughing, and laying their heads in peace.`
+    id:"concierge", title:"Concierge", adStyle:true, intro:"Review of the World's Fair Hotel by Allen N. Grier, Chicago Tribune",
+    text:`Come down to the neighborhood of ENGLEWOOD and enjoy the lavish accommodations of the WORLD'S FAIR HOTEL. NEWLY renovated and in HIGH demand, this three-story structure is close to the best sites in Chicago and is being fully renovated. COME now and save on your first visit. Recent reviews have stated, "I LOVED the location. I walked to the shops and AVOIDED the train across town." Another said, "The hotel was the PERFECT location to dress in my finest and explore the district of high-end shops before returning to incredible DRINKS that took hold." The World's Fair Hotel is the perfect trip for LOVING COUPLES, where they can explore in style; drinking, laughing, and laying their heads in peace.`
   },
   {
-    id:"coming-of-age", title:"Coming of Age",
-    text:`It's… uhh… nice to call this place home. I… umm… I... didn't hate living with my grandma, but it… wasn't me. I needed a place I could nurture and call my own. At first, it was lonely. There's really no way around it. But I found friends—people I loved in the proximity to downtown. It was the beginning of a new era. I… umm… never knew much about myself. I came to learn, and I came to love. It came and went… uhh... as I'm sure it does for everyone. Each lover is… *long pause* a totem… and a lesson learned. No matter our… I don't know… differences… I will always love them.`
+    id:"coming-of-age", title:"Coming of Age", intro:"Interview transcribed by A. Grier",
+    text:`“It's… uhh… nice to call this place home. I… umm… I... didn't hate living with my grandma, but it… wasn't me. I needed a place I could nurture and call my own. At first, it was lonely. There's really no way around it. But I found friends—people I loved in the proximity to downtown. It was the beginning of a new era. I… umm… never knew much about myself. I came to learn, and I came to love. It came and went… uhh... as I'm sure it does for everyone. Each lover is… *long pause* a totem… and a lesson learned. No matter our… I don't know… differences… I will always love them.”`
   },
   {
-    id:"icicles-in-new-york", title:"Icicles in New York",
-    text:`*Clicks tongue* Christmas is my favorite time. Uh… the kids… they loved opening presents and... I enjoyed putting their toys together. The tree… it shined brightly during the snowy night. Every year, I looked forward to that morning reveal… *clicks tongue* that Christmas Eve night, I had to close a business deal one of those nights. After the kids fell asleep, I says to the wife, "I gotta do this thing." On a snowy night, I drove from Jersey in the cold to Brooklyn to collect my family's final Christmas present. *Clicks tongue* I made it back in time to put the kids' presents together that morning. They were jumping up and down as they ripped silver-colored paper from a bike, paddle car, and Barbie doll. Before that… I delivered the hard-earned gift to the missus.`
+    id:"icicles-in-new-york", title:"Icicles in New York", intro:"Abandoned cassette tape, found and filed by A. Neal Grier",
+    text:`*Clicks tongue* “Christmas is my favorite time. Uh… the kids… they loved opening presents and... I enjoyed putting their toys together. The tree… it shined brightly during the snowy night. Every year, I looked forward to that morning reveal…” *Clicks tongue* “That Christmas Eve night, I had to close a business deal one of those nights. After the kids fell asleep, I says to the wife, ‘I gotta do this thing.’ On a snowy night, I drove from Jersey in the cold to Brooklyn to collect my family's final Christmas present.” *Clicks tongue* “I made it back in time to put the kids' presents together that morning. They were jumping up and down as they ripped silver-colored paper from a bike, paddle car, and Barbie doll. Before that… I delivered the hard-earned gift to the missus.”`
   },
   {
-    id:"mom-knows-best", title:"Mom Knows Best",
-    text:`[Mr. Alan Nelson Grier; childhood friend] Having been raised in the sticks, it's sometimes difficult to know yourself. Chores and duties would sometimes take you out of school. It didn't help that he never went to school. Like a small populace of this forgotten town, he was illiterate. He was never exposed to education, success, or societal development. It makes it worse when you take into account that he was mentally unstable, with no future to dream about. I moved on, but he didn't have the capacity to do the same. While his mother, God rest her soul, pushed ahead, he was safe as far as we knew. Unfortunately, I was too far away to help when he needed it. By that time, I never knew. I was told later that he was haunted, using the night as an escape from his mother. He needed love. No matter how he grew or how hard he tried to drive the demons in him, the darkest never passed until he crafted his own light.`
+    id:"mom-knows-best", title:"Mom Knows Best", intro:"Mr. Alan Nelson Grier; childhood friend",
+    text:`“Having been raised in the sticks, it's sometimes difficult to know yourself. Chores and duties would sometimes take you out of school. It didn't help that he never went to school. Like a small populace of this forgotten town, he was illiterate. He was never exposed to education, success, or societal development. It makes it worse when you take into account that he was mentally unstable, with no future to dream about. I moved on, but he didn't have the capacity to do the same. While his mother, God rest her soul, pushed ahead, he was safe as far as we knew. Unfortunately, I was too far away to help when he needed it. By that time, I never knew. I was told later that he was haunted, using the night as an escape from his mother. He needed love. No matter how he grew or how hard he tried to drive the demons in him, the darkest never passed until he crafted his own light.”`
   },
   {
     id:"ciphers", title:"Ciphers",
@@ -577,7 +571,7 @@ const stories = [
   },
   {
     id:"maroon-truck", title:"Maroon Truck",
-    text:`Sometimes, something as silly as a truck becomes your identity. When I bought mine, I identified with it. Hell, I think I loved it more than anything. In the 80s, trucks shifted differently. When I dropped it into drive, the motor grew to a mouth-watering RPM before it finally shifted. It was different from my truck later in the early 2000s. People described it as brown or rust-colored, but she was maroon. When they saw it, they knew it was me. I took great care of it, as women took care of me. They loved it just as much as I. I became confident behind its sun-burned steering wheel and cracked door panels. I always took them to my home, but they always saw my confidence in the truck.`
+    text:`Sometimes, something as silly as a truck becomes your identity. When I bought mine, I identified with it. Hell, I think I loved it more than anything. In the 80s, trucks shifted differently. When I dropped it into drive, the motor grew to a mouth-watering RPM before it finally shifted. It was different from my truck later in the early 2000s. People described it as brown or rust-colored, but she was maroon. When they saw it, they knew it. I took great care of it, as women took care of me. They loved it just as much as I. I became confident behind its sun-burned steering wheel and cracked door panels. I always took them to my home, but they always saw my confidence in the truck.`
   }
 ];
 
@@ -587,20 +581,6 @@ function isEpigraph(p){
   return /^["“'‘].*["”'’]\s*$/.test(p) && p.length < 160 && !p.includes("\n");
 }
 function caseNum(i){ return String(i+1).padStart(2, "0"); }
-
-// Pulls a leading "[...]" framing note (e.g. "[Mr. Alan Nelson Grier; childhood friend]")
-// off the front of the first paragraph, so it can render as its own italic opening line
-// instead of running straight into the body text.
-function splitIntro(paras){
-  const m = paras[0].match(/^\[([^\]]+)\]\s*(.*)$/s);
-  if(m){
-    const introLine = m[1].trim();
-    const rest = m[2].trim();
-    const newParas = rest ? [rest, ...paras.slice(1)] : paras.slice(1);
-    return { introLine, paras:newParas };
-  }
-  return { introLine:null, paras };
-}
 
 // ---------- CONTENTS ----------
 const tocList = document.getElementById("tocList");
@@ -659,11 +639,9 @@ function openReader(id){
     html += `<blockquote class="epigraph">${emphasize(paras[0])}</blockquote>`;
     bodyParas = paras.slice(1);
   }
-  const introSplit = splitIntro(bodyParas);
-  bodyParas = introSplit.paras;
   const applyAd = t => s.adStyle ? adCaps(emphasize(t)) : emphasize(t);
-  if(introSplit.introLine){
-    html += `<p class="intro-line${s.adStyle ? ' ad-byline' : ''}">${applyAd(introSplit.introLine)}</p>`;
+  if(s.intro){
+    html += `<p class="intro-line">${applyAd(s.intro)}</p>`;
   }
   html += bodyParas.map((p,i) => `<p${i===0 ? ' class="lead-para"' : ""}>${applyAd(p)}</p>`).join("");
   textEl.innerHTML = html;
@@ -683,6 +661,21 @@ function closeReader(){
   reader.classList.remove("open");
   document.body.style.overflow = "";
   currentId = null;
+}
+
+// On desktop there's no swipe, so going back to the previous story was only
+// possible via Contents. Repurpose the back arrow there to step backward
+// through the sequence, same wraparound as "Next Fragment." Mobile/tablet
+// keep the arrow's original job — exiting the reader — since continuous
+// swipe already handles story-to-story navigation there.
+function handleBackClick(){
+  if(!isMobilePaged() && currentId){
+    const idx = stories.findIndex(x => x.id === currentId);
+    const prev = stories[(idx - 1 + stories.length) % stories.length];
+    openReader(prev.id);
+  } else {
+    closeReader();
+  }
 }
 
 document.addEventListener("keydown", ev => {
@@ -741,10 +734,8 @@ function buildPages(s, pageW, availH){
     blocks.push({type:"epigraph", text:paras[0]});
     bodyParas = paras.slice(1);
   }
-  const introSplit = splitIntro(bodyParas);
-  bodyParas = introSplit.paras;
-  if(introSplit.introLine){
-    blocks.push({type:"intro", text:introSplit.introLine});
+  if(s.intro){
+    blocks.push({type:"intro", text:s.intro});
   }
   bodyParas.forEach((p, i) => {
     blocks.push({type:"p", text:p, lead:(i === 0)});
@@ -773,7 +764,7 @@ function buildPages(s, pageW, availH){
     if(block.type === "epigraph"){
       wrapper.innerHTML = `<blockquote class="epigraph">${applyAd(text)}</blockquote>`;
     } else if(block.type === "intro"){
-      wrapper.innerHTML = `<p class="intro-line${s.adStyle ? ' ad-byline' : ''}">${applyAd(text)}</p>`;
+      wrapper.innerHTML = `<p class="intro-line">${applyAd(text)}</p>`;
     } else {
       wrapper.innerHTML = `<p${lead ? ' class="lead-para"' : ""}>${applyAd(text)}</p>`;
     }
