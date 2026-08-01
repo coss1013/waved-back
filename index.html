@@ -901,23 +901,22 @@ function layoutPagination(resetToStart){
   const viewportH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
   const maxAvailH = Math.max(280, viewportH - top - footerAllowance);
 
-  // The card was stretching to fill nearly the whole screen even when its
-  // content (especially a title card) barely needed a fraction of that,
-  // which pushed the swipe hint far below the fold. Shrink the whole
-  // swipeable container itself, not just what's inside it, so the hint sits
-  // close beneath the card and is always visible without scrolling.
-  const availH = Math.round(maxAvailH * 0.74);
+  // Give both card types more room than before — the earlier 0.74 trim (done
+  // to stop the hint from being pushed off-screen) went too far the other
+  // way and started hurting readability. This still leaves enough margin for
+  // the hint to sit comfortably below the card without needing to scroll.
+  const availH = Math.round(maxAvailH * 0.85);
   pager.style.height = availH + "px";
 
   const pageW = pager.clientWidth;
 
   // Title cards have very little content (a numeral, a label, a title), so
-  // they get a shorter height still, centered within the (now-compact) pager.
-  // Text pages nearly fill it. Pack text against the actual rendered
-  // text-slide height, not the full availH, or content would overflow the
-  // shorter box and get clipped at the bottom.
-  const titleH = Math.round(availH * 0.62);
-  const textH = Math.round(availH * 0.96);
+  // they get a shorter height still, centered within the pager. Text pages
+  // nearly fill it. Pack text against the actual rendered text-slide height,
+  // not the full availH, or content would overflow the shorter box and get
+  // clipped at the bottom.
+  const titleH = Math.round(availH * 0.68);
+  const textH = Math.round(availH * 0.97);
 
   allSlots = buildAllSlots(pageW, textH);
 
