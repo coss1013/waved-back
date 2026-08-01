@@ -396,7 +396,6 @@
   .pager.paginated{
     overflow:hidden;
     touch-action:pan-y;
-    cursor:pointer;
     box-shadow:0 25px 50px -12px rgba(0,0,0,0.7), 0 8px 20px rgba(0,0,0,0.5);
     transform:rotate(-0.6deg);
   }
@@ -525,7 +524,7 @@
           <div class="reader-text" id="readerText"></div>
         </div>
       </div>
-      <p class="pager-hint" id="pagerHint"><span class="hint-arrow">&rsaquo;&rsaquo;</span> swipe or tap to begin</p>
+      <p class="pager-hint" id="pagerHint"><span class="hint-arrow">&rsaquo;&rsaquo;</span> swipe to begin</p>
     </div>
     <div class="reader-nav">
       <button class="another-case" id="anotherCase">Next Fragment &rarr;</button>
@@ -959,7 +958,7 @@ function updateHint(){
   const slot = allSlots[slotIndex];
   if(!slot) return;
   if(slot.type === "title"){
-    hint.innerHTML = '<span class="hint-arrow">&rsaquo;&rsaquo;</span> swipe or tap to begin';
+    hint.innerHTML = '<span class="hint-arrow">&rsaquo;&rsaquo;</span> swipe to begin';
   } else {
     const textSlots = allSlots.filter(sl => sl.storyIdx === slot.storyIdx && sl.type === "text");
     const pos = textSlots.indexOf(slot) + 1;
@@ -993,16 +992,6 @@ function goToPage(delta){
       goToPage(dx < 0 ? 1 : -1);
     }
   }, {passive:true});
-
-  // Tap-to-turn fallback (like Kindle's app): tap the right side to advance,
-  // left side to go back. Covers any environment where swipe isn't recognized
-  // — desktop mouse clicks, embedded previews, etc.
-  pager.addEventListener("click", ev => {
-    if(!isMobilePaged()) return;
-    const rect = pager.getBoundingClientRect();
-    const tapX = ev.clientX - rect.left;
-    goToPage(tapX < rect.width * 0.35 ? -1 : 1);
-  });
 })();
 
 let resizeTimer;
