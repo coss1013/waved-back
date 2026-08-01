@@ -335,6 +335,15 @@
     margin:0 0 1rem;
     border-bottom:1px solid rgba(43,32,24,0.2);
   }
+  .reader-text .outro-line{
+    font-family:'Source Serif 4', serif;
+    font-style:italic;
+    font-size:0.78rem;
+    color:var(--ink-dim);
+    margin:1.8rem 0 0;
+    padding-top:0.9rem;
+    border-top:1px solid rgba(43,32,24,0.15);
+  }
   .ad-caps{
     font-weight:800;
     letter-spacing:0.03em;
@@ -569,6 +578,11 @@ const stories = [
     text:`“Puzzles are scientifically proven to help with memory and cognitive function; someone once said that they helped prevent dementia. I don't know if that's true. How many people are needed to prove that evidence true? If it's true, does the puzzle need to have 200 pieces? Should it be 500, 1000, 10,000? How does one confirm its effectiveness? There was a time when puzzles helped me with my depression, helped with my headaches, helped with existence. I know you won't publish this letter in your world-renowned paper, but I felt it was worth writing you one last time—what fun we had over the years; what puzzles we solved; what anguish we shared. When you look to the heavens, day or night, the stars are always there; no longer for navigation, but to predict the future. What future that might be, only the Zodiac signs know.”`
   },
   {
+    id:"circle", title:"Circle", intro:"Found by Lt. Grier after a noise complaint*",
+    text:`It doesn't matter who you are; the thoughts exist. We all fall, we fail, we give up. A vertical rope aligns someone, or it marks passage above and below. It's there as you descend; it fights against you when you resist; it restricts when you struggle. How it presents itself depends on the person. When it appears in one's life depends on whether it touches you in early life or later. Its coarse windings can be harsh, slick, burning, or torturous to the touch. It can exist simply as a horizontal toy; two or more friends pulling to decide the winner of a playful game. It can personify itself as a lifeline when things get tough; a family on the other end pulling you to refuge. For some, it represents the afterlife. It hangs as a loop of promise; one of final comfort; a caring form, only a special few have felt. It beckons most lovingly: "Follow me, follow me. Everything I wanted, everything I asked for, my ends are now. I won't let this build up inside of me."`,
+    outro:"*You know who you are."
+  },
+  {
     id:"fantasy-rehearsal-model", title:"The Fantasy Rehearsal Model",
     text:`The most logical connection between two points is a straight line. In terms of time and distance, there is no argument. Even electricity has an instinctual nature to choose the shortest path, bypassing a complicated, calculated wiring scheme to ground out at first touch. This pattern seems to hold true throughout nature, biology, and physics on Earth. Every once in a while, a new point surfaces. This outlier lies far beyond the original two, but becomes the new omega. It could be a light-year away from the originals, yet the alpha chooses it over the safer endpoint. This phenomenon is so rare, it's difficult to predict where it'll turn up. But when it does, lives are destroyed.`
   },
@@ -651,6 +665,9 @@ function openReader(id){
     html += `<p class="intro-line">${applyAd(s.intro)}</p>`;
   }
   html += bodyParas.map((p,i) => `<p${i===0 ? ' class="lead-para"' : ""}>${applyAd(p)}</p>`).join("");
+  if(s.outro){
+    html += `<p class="outro-line">${applyAd(s.outro)}</p>`;
+  }
   textEl.innerHTML = html;
 
   reader.classList.add("open");
@@ -747,6 +764,9 @@ function buildPages(s, pageW, availH){
   bodyParas.forEach((p, i) => {
     blocks.push({type:"p", text:p, lead:(i === 0)});
   });
+  if(s.outro){
+    blocks.push({type:"outro", text:s.outro});
+  }
 
   const probe = document.createElement("div");
   probe.style.position = "absolute";
@@ -772,6 +792,8 @@ function buildPages(s, pageW, availH){
       wrapper.innerHTML = `<blockquote class="epigraph">${applyAd(text)}</blockquote>`;
     } else if(block.type === "intro"){
       wrapper.innerHTML = `<p class="intro-line">${applyAd(text)}</p>`;
+    } else if(block.type === "outro"){
+      wrapper.innerHTML = `<p class="outro-line">${applyAd(text)}</p>`;
     } else {
       wrapper.innerHTML = `<p${lead ? ' class="lead-para"' : ""}>${applyAd(text)}</p>`;
     }
@@ -796,7 +818,7 @@ function buildPages(s, pageW, availH){
   }
 
   blocks.forEach(block => {
-    if(block.type === "epigraph" || block.type === "intro"){
+    if(block.type === "epigraph" || block.type === "intro" || block.type === "outro"){
       const node = nodeFor(block, block.text, false);
       const h = measure(node);
       if(currentHtml.length > 0 && currentHeight + h > budgetH) flushPage();
