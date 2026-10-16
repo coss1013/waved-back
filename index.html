@@ -620,6 +620,21 @@
   .reader-text p{ font-weight:500; }
   .reader-text .outro-line{ color:var(--ink-read); }
 
+
+  /* volumes in the contents */
+  .toc-vol{
+    display:flex; align-items:baseline; gap:0.8rem;
+    padding:1.5rem 1.8rem 0.7rem;
+    border-bottom:1px solid var(--line);
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.7rem; letter-spacing:0.22em; text-transform:uppercase;
+    color:var(--bone-dim);
+    opacity:0;
+  }
+  .toc-vol span{ color:var(--accent-light); }
+  .toc-vol em{ font-family:'Fraunces', serif; font-style:italic; text-transform:none; letter-spacing:0; font-size:0.95rem; color:var(--bone); }
+  .toc-panel.open .toc-vol{ opacity:1; transition:opacity 0.45s ease calc(var(--i,0) * 22ms + 80ms); }
+
   /* soft fade behind the top controls so scrolled text never collides with them */
   body.reading::before{
     content:''; position:fixed; top:0; left:0; right:0; height:76px; z-index:49; pointer-events:none;
@@ -717,8 +732,8 @@ const stories = [
     text:`Switching radio stations is the only thing worth the trip. When one station passes into static, there's another right behind it. Maybe it's the state line or a random tower whose signal struck over it. You find yourself driving under them as you progress across the western part of the country. From Washington to Utah, the Top 40s would vary ever so slightly. Maybe it was the teasing airwaves of Los Angeles; maybe it was conservative doctrines of Mormon country. Regardless, it was bliss; each trip led me to a new lover or a former one I hold most dear.`
   },
   {
-    id:"concierge", title:"Concierge", adStyle:true, intro:"Review of the World's Fair Hotel by Allen N. Grier; unknown submission to the Chicago Tribune",
-    text:`Come down to the ENGLEWOOD neighborhood and enjoy the lavish accommodations at the WORLD'S FAIR HOTEL. NEWLY renovated and in HIGH demand, this three-story structure shares proximity to the best sites in Chicago. COME now and save on your first visit. Recent reviews have stated, "I LOVED the location, explored the neighboring shops, and AVOIDED the train across town." Another said, "The hotel was the PERFECT location to dress in my finest and explore the district of high-end shops. Though I visited in a state of reconstruction, after a long day of sightseeing, the miss and I returned in the evening to considerable service and incredible DRINKS that took hold." The World's Fair Hotel is the perfect trip for LOVING COUPLES, where they can explore in style; drinking, laughing, and laying their heads in peace.`
+    id:"what-remained", title:"What Remained", intro:"Report of the fire marshal, Englewood, August 1895.",
+    text:`Blaze reported near midnight. Two men were seen running from the structure; unidentified and never apprehended. An explosion was heard before flame was visible. Gas, most likely. Yet, the gas lines defied ordinary logic. Once the walls cooled enough to enter, the crew found a stairway ending in brick; a door that opened onto nothing; a second stairway, then a third, none matching the plans on file. The contractor's name changes floor to floor, as though no single man was ever permitted to see it in full. In the basement, a vat, its contents burned past identifying. A kiln, cold now, large enough for purposes a kiln has no ordinary reason to serve. A pit of lime, untouched by the flame, waiting the way lime waits. A vault, sealed, its door still locked from the outside; the alarm wire ran through every hallway, every stair, rigged so as not to summon help, but to announce its coming. The newspapers had already named it a castle before we ever set foot inside. When we did, we found a maze of nightmares. Whether the building deserved the title, or only earned it in the retelling, is a question this report cannot answer. Only that something was built here to be misunderstood, floor by floor.`
   },
   {
     id:"coming-of-age", title:"Coming of Age", intro:"Interview transcribed by A. Grier",
@@ -774,9 +789,39 @@ function isEpigraph(p){
 }
 function caseNum(i){ return String(i+1).padStart(2, "0"); }
 
+// ---------- VOLUMES ----------
+// Stories are grouped, in order, into volumes. "count" is how many pieces each volume holds;
+// any pieces beyond the listed counts join the last volume. Give a volume a "name" to show a
+// subtitle (leave it empty for just the numeral). Add a new entry to start a new volume.
+const VOLUMES = [
+  { numeral:"I",   name:"", count:5 },
+  { numeral:"II",  name:"", count:5 },
+  { numeral:"III", name:"", count:5 },
+];
+function volumeIndexOf(storyIdx){
+  let n = 0;
+  for(let v = 0; v < VOLUMES.length; v++){ n += VOLUMES[v].count; if(storyIdx < n) return v; }
+  return VOLUMES.length - 1;
+}
+function isVolumeStart(storyIdx){ return storyIdx === 0 || volumeIndexOf(storyIdx) !== volumeIndexOf(storyIdx - 1); }
+function volumeRange(v){
+  const idxs = stories.map((s, i) => i).filter(i => volumeIndexOf(i) === v);
+  return { first: idxs[0], last: idxs[idxs.length - 1] };
+}
+function volumeLabel(storyIdx){ return `Vol. ${VOLUMES[volumeIndexOf(storyIdx)].numeral}`; }
+let startAtVolume = false;
+
 // ---------- CONTENTS ----------
 const tocList = document.getElementById("tocList");
 stories.forEach((s, i) => {
+  if(isVolumeStart(i)){
+    const v = VOLUMES[volumeIndexOf(i)];
+    const hd = document.createElement("div");
+    hd.className = "toc-vol";
+    hd.style.setProperty("--i", i);
+    hd.innerHTML = `<span>Volume ${v.numeral}</span>${v.name ? `<em>${v.name}</em>` : ""}`;
+    tocList.appendChild(hd);
+  }
   const row = document.createElement("div");
   row.className = "toc-row";
   row.tabIndex = 0;
@@ -816,9 +861,10 @@ tocClose.addEventListener("click", closeTOC);
 tocOverlay.addEventListener("click", closeTOC);
 
 document.getElementById("beginReading").addEventListener("click", () => {
+  startAtVolume = true;
   openReader(stories[0].id);
 });
-document.getElementById("heroCount").textContent = `${stories.length} fragments`;
+document.getElementById("heroCount").textContent = `${stories.length} fragments \u00b7 ${VOLUMES.length} volumes`;
 document.getElementById("anotherCase").addEventListener("click", () => {
   const idx = stories.findIndex(x => x.id === currentId);
   const next = stories[(idx + 1) % stories.length]; // loops back to the first after the last
@@ -863,12 +909,12 @@ function openReader(id){
   currentEntryRef = s;
   const idx = stories.findIndex(x => x.id === id);
 
-  document.getElementById("readerEyebrow").textContent = `Recovered — No. ${caseNum(idx)}`;
+  document.getElementById("readerEyebrow").textContent = `${volumeLabel(idx)} · Recovered — No. ${caseNum(idx)}`;
   document.getElementById("readerTitle").textContent = s.title;
   document.getElementById("titleNum").textContent = caseNum(idx);
   document.getElementById("titleEyebrow").textContent = "Recovered";
   document.getElementById("titleHeading").textContent = s.title;
-  document.getElementById("titleSub").textContent = `No. ${caseNum(idx)}`;
+  document.getElementById("titleSub").textContent = `${volumeLabel(idx)} · No. ${caseNum(idx)}`;
 
   const textEl = document.getElementById("readerText");
   const paras = s.text.split("\n\n").map(p => p.trim());
@@ -897,7 +943,7 @@ function openReader(id){
     const frame = document.querySelector(".paper-frame");
     frame.classList.remove("swap"); void frame.offsetWidth; frame.classList.add("swap");
   }
-  requestAnimationFrame(() => { layoutPagination(true); updateProgress(); });
+  requestAnimationFrame(() => { layoutPagination(true); startAtVolume = false; updateProgress(); });
   // Mobile browsers (especially iOS Safari) can report a stale viewport size
   // on first paint while the address bar is still settling. Re-measure shortly
   // after to correct for that, rather than requiring the user to rotate the
@@ -975,7 +1021,17 @@ function titleSlotHtml(story, idx){
   return `<p class="title-num">${caseNum(idx)}</p>
     <p class="eyebrow">Recovered</p>
     <h3>${story.title}</h3>
-    <p class="title-sub">No. ${caseNum(idx)}</p>`;
+    <p class="title-sub">${volumeLabel(idx)} · No. ${caseNum(idx)}</p>`;
+}
+
+function volumeSlotHtml(v){
+  const vol = VOLUMES[v];
+  const r = volumeRange(v);
+  const rng = `Nos. ${caseNum(r.first)}\u2013${caseNum(r.last)}`;
+  return `<p class="title-num">${vol.numeral}</p>
+    <p class="eyebrow">Recovered, in order</p>
+    <h3>Volume ${vol.numeral}</h3>
+    <p class="title-sub">${vol.name ? vol.name + " \u00b7 " : ""}${rng}</p>`;
 }
 
 // Builds one continuous, flat sequence of slots spanning the ENTIRE
@@ -984,6 +1040,9 @@ function titleSlotHtml(story, idx){
 function buildAllSlots(pageW, availH){
   const slots = [];
   stories.forEach((story, storyIdx) => {
+    if(isVolumeStart(storyIdx)){
+      slots.push({ type:"volume", storyIdx, html: volumeSlotHtml(volumeIndexOf(storyIdx)) });
+    }
     slots.push({ type:"title", storyIdx, html: titleSlotHtml(story, storyIdx) });
     buildPages(story, pageW, availH).forEach(html => {
       slots.push({ type:"text", storyIdx, html });
@@ -1187,7 +1246,7 @@ function layoutPagination(resetToStart){
 
   allSlots.forEach(slot => {
     const el = document.createElement("div");
-    const isTitle = slot.type === "title";
+    const isTitle = slot.type === "title" || slot.type === "volume";
     el.className = "gen-slot " + (isTitle ? "title-page" : "reader-text paginated page-slide");
     el.style.width = pageW + "px";
     el.style.height = (isTitle ? titleH : textH) + "px";
@@ -1198,7 +1257,13 @@ function layoutPagination(resetToStart){
 
   if(resetToStart){
     const storyIdx = stories.findIndex(s => s.id === currentId);
-    const targetIdx = allSlots.findIndex(sl => sl.type === "title" && sl.storyIdx === storyIdx);
+    let targetIdx = -1;
+    if(startAtVolume){
+      targetIdx = allSlots.findIndex(sl => sl.type === "volume" && sl.storyIdx === storyIdx);
+    }
+    if(targetIdx < 0){
+      targetIdx = allSlots.findIndex(sl => sl.type === "title" && sl.storyIdx === storyIdx);
+    }
     slotIndex = targetIdx >= 0 ? targetIdx : 0;
   } else {
     slotIndex = Math.min(slotIndex, allSlots.length - 1);
@@ -1221,7 +1286,7 @@ function updateHint(){
   if(!isMobilePaged() || !allSlots.length) return;
   const slot = allSlots[slotIndex];
   if(!slot) return;
-  if(slot.type === "title"){
+  if(slot.type === "title" || slot.type === "volume"){
     hint.innerHTML = '<span class="hint-arrow">&rsaquo;&rsaquo;</span> swipe to begin';
   } else {
     const textSlots = allSlots.filter(sl => sl.storyIdx === slot.storyIdx && sl.type === "text");
