@@ -458,7 +458,7 @@
     .reader-top{ margin-bottom:1.8rem; }
     .reader-eyebrow{ display:none; }
     .reader h2{ display:none; }
-    .reader-text p{ font-size:0.99rem; line-height:1.55; margin-bottom:1rem; }
+    .reader-text p{ font-size:1.03rem; line-height:1.55; margin-bottom:1rem; }
     .epigraph{ font-size:1.2rem; margin-bottom:1.8rem; padding-bottom:1.2rem; }
     .reader-nav{ margin-top:2.4rem; padding-top:1.2rem; }
     .pager-hint{ display:block !important; }
@@ -603,6 +603,22 @@
   .gate input{ min-height:48px; text-align:center; letter-spacing:0.12em; transition:border-color 0.2s ease, background 0.2s ease; }
   .gate input:focus{ border-color:var(--accent-light); background:#161618; outline:none; box-shadow:0 0 0 3px rgba(156,43,43,0.28); }
   .gate button{ min-height:48px; }
+
+  /* calmer reading surface: a feathered lighter patch sits under the text only,
+     so the creases and mottling never fight the letters, while the torn, aged edges stay */
+  :root{ --ink-read:#1b130c; --paper-calm:rgba(238,226,192,0.80); }
+  .reader-text{ isolation:isolate; position:relative; }
+  .reader-text::before{
+    content:''; position:absolute; z-index:-1; pointer-events:none;
+    inset:4.4rem 4.6rem;
+    background:var(--paper-calm);
+    border-radius:18px;
+    -webkit-filter:blur(18px); filter:blur(18px);
+  }
+  .reader-text.paginated::before{ inset:3.3rem 1.15rem 1.7rem; filter:blur(12px); -webkit-filter:blur(12px); }
+  .reader-text p, .reader-text em{ color:var(--ink-read); }
+  .reader-text p{ font-weight:500; }
+  .reader-text .outro-line{ color:var(--ink-read); }
 
   /* soft fade behind the top controls so scrolled text never collides with them */
   body.reading::before{
