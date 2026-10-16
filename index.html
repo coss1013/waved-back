@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#050505">
+<meta name="color-scheme" content="dark">
 <title>The Ones Who Waved Back</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23050505'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%235c231c'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -197,52 +199,116 @@
   }
   .begin-reading:hover{ background:var(--accent-bright); transform:translateX(2px); }
 
-  /* ---------- TABLE OF CONTENTS ---------- */
-  .toc-toggle{
-    position:fixed; top:1.2rem; right:1.2rem; z-index:50;
-    background:none; border:none;
-    color:#ffffff;
-    mix-blend-mode:difference;
-    font-size:1.5rem; line-height:1;
-    padding:0.5rem;
+  /* ---------- CHROME (menu / back / status) ---------- */
+  .chip{
+    position:fixed; z-index:50;
+    width:44px; height:44px;
+    display:grid; place-items:center;
+    padding:0;
+    color:var(--bone);
+    background:rgba(8,8,9,0.58);
+    -webkit-backdrop-filter:blur(10px) saturate(1.2);
+    backdrop-filter:blur(10px) saturate(1.2);
+    border:1px solid rgba(231,227,218,0.16);
+    border-radius:50%;
     cursor:pointer;
-    opacity:0.9;
-    transition:opacity 0.2s ease;
+    box-shadow:0 4px 14px rgba(0,0,0,0.45);
+    transition:border-color 0.25s ease, background 0.25s ease, transform 0.25s ease, opacity 0.3s ease;
   }
-  .toc-toggle:hover{ opacity:1; }
+  .chip svg{ width:20px; height:20px; display:block; }
+  .chip:hover{ border-color:var(--accent-light); background:rgba(40,10,10,0.7); }
+  .chip:active{ transform:scale(0.94); }
+  .toc-toggle{ top:max(1rem, env(safe-area-inset-top)); right:max(1rem, env(safe-area-inset-right)); }
+  .back-link{
+    top:max(1rem, env(safe-area-inset-top)); left:max(1rem, env(safe-area-inset-left));
+    opacity:0; pointer-events:none;
+  }
+  body.reading .back-link{ opacity:1; pointer-events:auto; }
+
+  .status{
+    position:fixed; z-index:50;
+    top:max(1rem, env(safe-area-inset-top)); left:50%;
+    transform:translateX(-50%);
+    height:44px; display:flex; align-items:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem; letter-spacing:0.16em;
+    color:var(--bone-dim);
+    pointer-events:none;
+    opacity:0; transition:opacity 0.3s ease;
+    white-space:nowrap;
+  }
+  .status b{ color:var(--bone); font-weight:500; }
+  body.reading .status{ opacity:1; }
+  .progress{
+    position:fixed; left:0; right:0; top:0; height:2px; z-index:55;
+    background:transparent; pointer-events:none;
+    opacity:0; transition:opacity 0.3s ease;
+  }
+  .progress span{
+    display:block; height:100%; width:100%;
+    background:linear-gradient(90deg, var(--accent-bright), var(--accent-light));
+    transform-origin:0 50%; transform:scaleX(0);
+    transition:transform 0.35s cubic-bezier(.22,.61,.36,1);
+  }
+  body.reading .progress{ opacity:1; }
+
+  /* ---------- TABLE OF CONTENTS ---------- */
   .toc-overlay{
     position:fixed; inset:0; z-index:59;
-    background:rgba(0,0,0,0.7);
+    background:rgba(0,0,0,0.72);
+    -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px);
     opacity:0; pointer-events:none;
-    transition:opacity 0.3s ease;
+    transition:opacity 0.35s ease;
   }
   .toc-overlay.open{ opacity:1; pointer-events:auto; }
   .toc-panel{
     position:fixed; top:0; right:0; bottom:0; z-index:60;
-    width:min(360px, 86vw);
-    background:var(--void-2);
-    box-shadow:-6px 0 30px rgba(0,0,0,0.5);
-    padding:3rem 1.8rem 2rem;
+    width:min(380px, 88vw);
+    background:linear-gradient(180deg, #131315, var(--void-2));
+    box-shadow:-10px 0 40px rgba(0,0,0,0.6);
+    padding:max(1.2rem, env(safe-area-inset-top)) 0 max(1.5rem, env(safe-area-inset-bottom));
     overflow-y:auto;
-    transform:translateX(100%);
-    transition:transform 0.4s cubic-bezier(.4,0,.2,1);
+    overscroll-behavior:contain;
+    transform:translateX(102%);
+    visibility:hidden;
+    transition:transform 0.45s cubic-bezier(.22,.61,.36,1), visibility 0s linear 0.45s;
     border-left:1px solid var(--line);
   }
-  .toc-panel.open{ transform:translateX(0); }
+  .toc-panel.open{ transform:translateX(0); visibility:visible; transition:transform 0.45s cubic-bezier(.22,.61,.36,1), visibility 0s; }
+  .toc-head{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:1rem;
+    padding:0.4rem 1.4rem 1.4rem 1.8rem;
+  }
   .toc-title{
     font-family:'Fraunces', serif;
     font-weight:500; font-style:italic;
-    font-size:1.5rem;
-    margin:0.5rem 0 2rem;
+    font-size:1.5rem; line-height:1.1;
+    margin:0.5rem 0 0;
     color:var(--bone);
   }
+  .toc-close{ position:static; box-shadow:none; flex:0 0 auto; }
+  .toc-list{ border-top:1px solid var(--line); }
   .toc-row{
-    display:flex; align-items:baseline; gap:0.9rem;
-    padding:1rem 0.2rem;
+    display:flex; align-items:baseline; gap:1rem;
+    min-height:52px;
+    padding:0.95rem 1.8rem;
     border-bottom:1px solid var(--line);
     cursor:pointer;
+    position:relative;
+    transition:background 0.25s ease, padding-left 0.25s ease;
+    opacity:0; transform:translateX(10px);
   }
-  .toc-row:hover{ background:rgba(92,20,20,0.18); }
+  .toc-panel.open .toc-row{
+    opacity:1; transform:none;
+    transition:background 0.25s ease, padding-left 0.25s ease, opacity 0.45s ease calc(var(--i,0) * 22ms + 120ms), transform 0.45s cubic-bezier(.22,.61,.36,1) calc(var(--i,0) * 22ms + 120ms);
+  }
+  .toc-row::before{
+    content:''; position:absolute; left:0; top:0; bottom:0; width:2px;
+    background:var(--accent-light); transform:scaleY(0); transition:transform 0.3s ease;
+  }
+  .toc-row:hover, .toc-row:focus-visible{ background:rgba(92,20,20,0.2); padding-left:2.1rem; }
+  .toc-row.active{ background:rgba(92,20,20,0.14); }
+  .toc-row.active::before, .toc-row:hover::before{ transform:scaleY(1); }
   .toc-num{
     font-family:'JetBrains Mono', monospace;
     font-size:0.74rem;
@@ -251,11 +317,11 @@
   }
   .toc-label{
     font-family:'Fraunces', serif;
-    font-size:1.02rem;
+    font-size:1.06rem;
     color:var(--bone);
   }
 
-  /* ---------- READER ---------- */
+/* ---------- READER ---------- */
   .reader{
     position:fixed; inset:0;
     background:var(--void-lit);
@@ -276,18 +342,6 @@
     .hero-paper{ max-width:none; padding:5.5rem 6rem; }
   }
   .reader-top{ display:flex; justify-content:space-between; align-items:center; }
-  .back-link{
-    position:fixed; top:1.2rem; left:1.2rem; z-index:50;
-    background:none; border:none;
-    color:#ffffff;
-    mix-blend-mode:difference;
-    font-size:1.4rem; line-height:1;
-    padding:0.5rem;
-    cursor:pointer;
-    opacity:0.9;
-    transition:opacity 0.2s ease;
-  }
-  .back-link:hover{ opacity:1; }
   .reader-eyebrow{ margin-bottom:0.6rem; }
   .reader h2{
     font-family:'Fraunces', serif;
@@ -361,25 +415,35 @@
   }
   .reader-nav{
     display:flex;
-    justify-content:center;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
     margin-top:4rem;
     padding-top:1.6rem;
     border-top:1px solid var(--line);
+  }
+  .nav-count{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem; letter-spacing:0.16em;
+    color:var(--bone-dim);
   }
   .another-case{
     font-family:'JetBrains Mono', monospace;
     font-size:0.78rem;
     letter-spacing:0.1em;
     text-transform:uppercase;
-    color:var(--bone-dim);
+    color:var(--bone);
     background:none;
-    border:1px solid var(--line);
+    border:1px solid rgba(231,227,218,0.22);
     border-radius:2px;
-    padding:0.7rem 1.4rem;
+    padding:0.85rem 1.5rem;
+    min-height:44px;
     cursor:pointer;
-    transition:color 0.2s ease, border-color 0.2s ease;
+    transition:color 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
   }
-  .another-case:hover{ color:var(--bone); border-color:var(--accent-bright); }
+  .another-case:hover{ border-color:var(--accent-light); background:rgba(92,20,20,0.25); }
+  #anotherCase:hover{ transform:translateX(2px); }
+  #prevCase:hover{ transform:translateX(-2px); }
 
   @media (max-width:1024px){
     .reader-inner{ padding-top:max(7vh, 4.75rem); padding-bottom:14vh; }
@@ -486,6 +550,74 @@
   @media (prefers-reduced-motion: reduce){
     .hint-arrow{ animation:none; }
   }
+
+  /* ---------- REFINEMENT LAYER ---------- */
+  ::selection{ background:var(--accent); color:var(--bone); }
+  html{ -webkit-text-size-adjust:100%; }
+  body{ -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; text-rendering:optimizeLegibility; }
+  :focus-visible{ outline:2px solid var(--accent-light); outline-offset:3px; border-radius:2px; }
+  .chip:focus-visible{ border-radius:50%; }
+  .reader{ scrollbar-width:thin; scrollbar-color:rgba(231,227,218,0.18) transparent; overscroll-behavior:contain; }
+  .toc-panel{ scrollbar-width:thin; scrollbar-color:rgba(231,227,218,0.18) transparent; }
+
+  /* reading typography */
+  .reader-text p{ text-wrap:pretty; hyphens:manual; font-kerning:normal; font-optical-sizing:auto; }
+  .epigraph, .title-page h3, .reader h2, .hero-paper h1{ text-wrap:balance; }
+
+  /* story swap */
+  @keyframes swap-in{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:none; } }
+  .paper-frame.swap{ animation:swap-in 0.5s cubic-bezier(.22,.61,.36,1) both; }
+
+  /* hero entrance + details */
+  @keyframes rise{ from{ opacity:0; transform:translateY(18px); } to{ opacity:1; transform:none; } }
+  @keyframes rise-paper{ from{ opacity:0; transform:translateY(18px) rotate(-0.8deg); } to{ opacity:1; transform:rotate(-0.8deg); } }
+  .hero-paper{ animation:rise-paper 0.9s cubic-bezier(.22,.61,.36,1) both; }
+  .hero-paper > *{ animation:rise 0.8s cubic-bezier(.22,.61,.36,1) both; }
+  .hero-paper > :nth-child(1){ animation-delay:0.15s; }
+  .hero-paper > :nth-child(2){ animation-delay:0.28s; }
+  .hero-paper > :nth-child(3){ animation-delay:0.42s; }
+  .hero-paper > :nth-child(4){ animation-delay:0.52s; }
+  .hero-paper > :nth-child(5){ animation-delay:0.62s; }
+  .hero-paper .hero-count{
+    margin:1.1rem 0 0;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.74rem; letter-spacing:0.16em; text-transform:uppercase;
+    color:var(--ink-dim);
+  }
+  .begin-reading{
+    display:inline-flex; align-items:center; gap:0.7rem;
+    min-height:48px;
+    box-shadow:0 8px 20px rgba(60,10,10,0.35);
+  }
+  .begin-reading .arr{ display:inline-block; transition:transform 0.25s ease; }
+  .begin-reading:hover{ transform:none; }
+  .begin-reading:hover .arr{ transform:translateX(5px); }
+
+  /* gate */
+  @keyframes shake{ 0%,100%{ transform:none; } 20%{ transform:translateX(-7px); } 40%{ transform:translateX(6px); } 60%{ transform:translateX(-4px); } 80%{ transform:translateX(3px); } }
+  .gate{ background:var(--candle-glow), var(--void-gradient); }
+  .gate .eyebrow, .gate h1, .gate form{ animation:rise 0.8s cubic-bezier(.22,.61,.36,1) both; }
+  .gate h1{ animation-delay:0.12s; }
+  .gate form{ animation-delay:0.26s; }
+  .gate form.shake{ animation:shake 0.4s ease; }
+  .gate input{ min-height:48px; text-align:center; letter-spacing:0.12em; transition:border-color 0.2s ease, background 0.2s ease; }
+  .gate input:focus{ border-color:var(--accent-light); background:#161618; outline:none; box-shadow:0 0 0 3px rgba(156,43,43,0.28); }
+  .gate button{ min-height:48px; }
+
+  /* soft fade behind the top controls so scrolled text never collides with them */
+  body.reading::before{
+    content:''; position:fixed; top:0; left:0; right:0; height:76px; z-index:49; pointer-events:none;
+    background:linear-gradient(180deg, rgba(5,5,5,0.88), rgba(5,5,5,0));
+  }
+
+  /* mobile polish */
+  @media (max-width:640px){
+    .chip{ width:42px; height:42px; }
+    .status{ font-size:0.68rem; }
+  }
+  @media (max-width:1024px){
+    .status{ top:max(1rem, env(safe-area-inset-top)); }
+  }
 </style>
 </head>
 <body>
@@ -500,11 +632,17 @@
   </form>
 </div>
 
-<button class="toc-toggle" id="tocToggle" aria-label="Open contents">&#9776;</button>
+<div class="progress" id="progress" aria-hidden="true"><span id="progressBar"></span></div>
+<button class="chip toc-toggle" id="tocToggle" aria-label="Open contents" aria-expanded="false" aria-controls="tocPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
 <div class="toc-overlay" id="tocOverlay"></div>
-<div class="toc-panel" id="tocPanel">
-  <p class="eyebrow">Contents</p>
-  <h2 class="toc-title">The Ones Who Waved Back</h2>
+<div class="toc-panel" id="tocPanel" role="dialog" aria-modal="true" aria-label="Contents" aria-hidden="true">
+  <div class="toc-head">
+    <div>
+      <p class="eyebrow">Contents</p>
+      <h2 class="toc-title">The Ones Who Waved Back</h2>
+    </div>
+    <button class="chip toc-close" id="tocClose" aria-label="Close contents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
   <div class="toc-list" id="tocList"></div>
 </div>
 
@@ -513,7 +651,8 @@
     <p class="eyebrow">short takes, unclaimed</p>
     <h1>The Ones Who Waved Back</h1>
     <p class="tagline">Some things are better left dead.</p>
-    <button class="begin-reading" id="beginReading">Begin Reading &rarr;</button>
+    <p class="hero-count" id="heroCount"></p>
+    <button class="begin-reading" id="beginReading">Begin Reading <span class="arr" aria-hidden="true">&rarr;</span></button>
   </div>
 </section>
 
@@ -537,12 +676,15 @@
       <p class="pager-hint" id="pagerHint"><span class="hint-arrow">&rsaquo;&rsaquo;</span> swipe to begin</p>
     </div>
     <div class="reader-nav">
+      <button class="another-case" id="prevCase">&larr; Previous</button>
+      <span class="nav-count" id="navCount"></span>
       <button class="another-case" id="anotherCase">Next Fragment &rarr;</button>
     </div>
   </div>
 </div>
 
-<button class="back-link" onclick="handleBackClick()" aria-label="Back to homepage">&larr;</button>
+<button class="chip back-link" id="backLink" onclick="closeReader()" aria-label="Back to homepage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+<div class="status" id="status" aria-hidden="true"></div>
 
 <script>
 const stories = [
@@ -624,6 +766,8 @@ stories.forEach((s, i) => {
   row.tabIndex = 0;
   row.setAttribute("role","button");
   row.innerHTML = `<span class="toc-num">${caseNum(i)}</span><span class="toc-label">${s.title}</span>`;
+  row.dataset.id = s.id;
+  row.style.setProperty("--i", i);
   const open = () => { openReader(s.id); closeTOC(); };
   row.addEventListener("click", open);
   row.addEventListener("keydown", ev => { if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); open(); } });
@@ -632,19 +776,64 @@ stories.forEach((s, i) => {
 
 const tocPanel = document.getElementById("tocPanel");
 const tocOverlay = document.getElementById("tocOverlay");
-function openTOC(){ tocPanel.classList.add("open"); tocOverlay.classList.add("open"); }
-function closeTOC(){ tocPanel.classList.remove("open"); tocOverlay.classList.remove("open"); }
-document.getElementById("tocToggle").addEventListener("click", openTOC);
+const tocToggle = document.getElementById("tocToggle");
+const tocClose = document.getElementById("tocClose");
+function tocIsOpen(){ return tocPanel.classList.contains("open"); }
+function openTOC(){
+  tocList.querySelectorAll(".toc-row").forEach(r => r.classList.toggle("active", r.dataset.id === currentId));
+  tocPanel.classList.add("open"); tocOverlay.classList.add("open");
+  tocPanel.setAttribute("aria-hidden","false"); tocToggle.setAttribute("aria-expanded","true");
+  setTimeout(() => {
+    const a = tocList.querySelector(".toc-row.active");
+    if(a) a.scrollIntoView({block:"center"});
+    tocClose.focus({preventScroll:true});
+  }, 60);
+}
+function closeTOC(){
+  const wasOpen = tocIsOpen();
+  tocPanel.classList.remove("open"); tocOverlay.classList.remove("open");
+  tocPanel.setAttribute("aria-hidden","true"); tocToggle.setAttribute("aria-expanded","false");
+  if(wasOpen) tocToggle.focus({preventScroll:true});
+}
+tocToggle.addEventListener("click", openTOC);
+tocClose.addEventListener("click", closeTOC);
 tocOverlay.addEventListener("click", closeTOC);
 
 document.getElementById("beginReading").addEventListener("click", () => {
   openReader(stories[0].id);
 });
+document.getElementById("heroCount").textContent = `${stories.length} fragments`;
 document.getElementById("anotherCase").addEventListener("click", () => {
   const idx = stories.findIndex(x => x.id === currentId);
   const next = stories[(idx + 1) % stories.length]; // loops back to the first after the last
   openReader(next.id);
 });
+document.getElementById("prevCase").addEventListener("click", () => {
+  const idx = stories.findIndex(x => x.id === currentId);
+  const prev = stories[(idx - 1 + stories.length) % stories.length];
+  openReader(prev.id);
+});
+
+// ---------- STATUS + PROGRESS ----------
+const statusEl = document.getElementById("status");
+const progressBar = document.getElementById("progressBar");
+const navCount = document.getElementById("navCount");
+function updateProgress(){
+  if(!currentId) return;
+  const N = stories.length;
+  const idx = stories.findIndex(x => x.id === currentId);
+  statusEl.innerHTML = `<b>${caseNum(idx)}</b>&nbsp;/&nbsp;${String(N).padStart(2,"0")}`;
+  navCount.textContent = `${caseNum(idx)} / ${String(N).padStart(2,"0")}`;
+  let frac = 0;
+  if(isMobilePaged() && allSlots.length > 1){
+    frac = slotIndex / (allSlots.length - 1);
+  } else {
+    const max = reader.scrollHeight - reader.clientHeight;
+    const within = max > 0 ? Math.min(1, reader.scrollTop / max) : 0;
+    frac = (idx + within) / N;
+  }
+  progressBar.style.transform = `scaleX(${Math.max(0.01, Math.min(1, frac))})`;
+}
 
 // ---------- READER ----------
 const reader = document.getElementById("reader");
@@ -683,10 +872,16 @@ function openReader(id){
   }
   textEl.innerHTML = html;
 
+  const wasOpen = reader.classList.contains("open");
   reader.classList.add("open");
   reader.scrollTop = 0;
   document.body.style.overflow = "hidden";
-  requestAnimationFrame(() => layoutPagination(true));
+  document.body.classList.add("reading");
+  if(wasOpen && !isMobilePaged()){
+    const frame = document.querySelector(".paper-frame");
+    frame.classList.remove("swap"); void frame.offsetWidth; frame.classList.add("swap");
+  }
+  requestAnimationFrame(() => { layoutPagination(true); updateProgress(); });
   // Mobile browsers (especially iOS Safari) can report a stale viewport size
   // on first paint while the address bar is still settling. Re-measure shortly
   // after to correct for that, rather than requiring the user to rotate the
@@ -697,6 +892,7 @@ function openReader(id){
 function closeReader(){
   reader.classList.remove("open");
   document.body.style.overflow = "";
+  document.body.classList.remove("reading");
   currentId = null;
 }
 
@@ -715,8 +911,23 @@ function handleBackClick(){
   }
 }
 
+reader.addEventListener("scroll", () => { if(!isMobilePaged()) updateProgress(); }, {passive:true});
+
 document.addEventListener("keydown", ev => {
-  if(ev.key === "Escape" && currentId) closeReader();
+  if(document.body.classList.contains("locked")) return;
+  if(ev.key === "Escape"){
+    if(tocIsOpen()) closeTOC();
+    else if(currentId) closeReader();
+    return;
+  }
+  if(!currentId || tocIsOpen()) return;
+  const t = ev.target && ev.target.tagName;
+  if(t === "INPUT" || t === "TEXTAREA") return;
+  if(ev.key === "ArrowRight" || ev.key === "ArrowLeft"){
+    const d = ev.key === "ArrowRight" ? 1 : -1;
+    if(isMobilePaged()) goToPage(d);
+    else document.getElementById(d > 0 ? "anotherCase" : "prevCase").click();
+  }
 });
 
 // ---------- GATE ----------
@@ -731,6 +942,8 @@ document.getElementById("gateForm").addEventListener("submit", function(ev){
     document.body.classList.remove("locked");
     document.getElementById("gate").classList.add("hidden");
   } else {
+    const gf = document.getElementById("gateForm");
+    gf.classList.remove("shake"); void gf.offsetWidth; gf.classList.add("shake");
     document.getElementById("gateError").textContent = "Not quite — try again.";
     document.getElementById("gateInput").value = "";
     document.getElementById("gateInput").focus();
@@ -903,6 +1116,7 @@ function syncCurrentStoryFromSlot(){
     currentId = story.id;
     currentEntryRef = story;
   }
+  updateProgress();
 }
 
 function layoutPagination(resetToStart){
